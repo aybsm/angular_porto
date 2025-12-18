@@ -1,0 +1,167 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <!-- <p>products works!</p> -->
+    <!-- id,sku,title,category,price,rating,stock,minimumOrderQuantity,brand -->
+    <dx-data-grid
+      id="gridContainer"
+      [dataSource]="dataSource"
+      [showBorders]="true"
+      [focusedRowEnabled]="true"
+      [hoverStateEnabled]="true"
+      [allowColumnReordering]="true"
+      [rowAlternationEnabled]="true"
+      [showColumnLines]="true"
+      [showRowLines]="true"
+      [height]="'100%'"
+      [width]="'100%'"
+      [remoteOperations]="false"
+      [columnHidingEnabled]="true"
+      [elementAttr]="{ id: 'elementId', class: 'center-header-text' }"
+      (onCellPrepared)="onCellPreparedHandler($event)"
+    >
+      <!-- <dxo-element-attr
+        [id]="'elementId'"
+        [class]="'center-header-text'"
+      ></dxo-element-attr> -->
+      <dxo-load-panel
+        [enabled]="true"
+        [text]="'Loading...'"
+        [showIndicator]="true"
+        [showPane]="true"
+        [shading]="true"
+        [shadingColor]="'rgba(0,0,0,0.4)'"
+      ></dxo-load-panel>
+      <dxo-scrolling [mode]="'on'" [showScrollbar]="'always'"> </dxo-scrolling>
+      <dxo-filter-row [visible]="true" [applyFilter]="'auto'"> </dxo-filter-row>
+      <dxo-header-filter [visible]="true"> </dxo-header-filter>
+      <dxo-paging [pageSize]="15"> </dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [showPageSizeSelector]="true"
+        [showInfo]="true"
+        [showNavigationButtons]="true"
+        [allowedPageSizes]="[10, 15, 20, 25, 50, 100]"
+      >
+      </dxo-pager>
+      <dxo-search-panel [visible]="true" [highlightCaseSensitive]="false">
+      </dxo-search-panel>
+      <dxo-grouping [contextMenuEnabled]="true" [autoExpandAll]="true">
+      </dxo-grouping>
+      <dxo-group-panel [visible]="true" [allowColumnDragging]="true">
+      </dxo-group-panel>
+
+      <dxi-column
+        dataField="id"
+        caption="ID"
+        dataType="number"
+        selectedFilterOperation="="
+        allowGrouping="false"
+        allowHiding="true"
+        hidingPriority="0"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="0"></dxo-format>
+      </dxi-column>
+      <dxi-column
+        dataField="sku"
+        caption="SKU"
+        dataType="string"
+        selectedFilterOperation="contains"
+        allowGrouping="true"
+        allowHiding="true"
+        hidingPriority="3"
+      >
+      </dxi-column>
+      <dxi-column
+        dataField="title"
+        caption="TITLE"
+        dataType="string"
+        selectedFilterOperation="contains"
+        allowGrouping="true"
+      >
+      </dxi-column>
+      <dxi-column
+        dataField="category"
+        caption="CATEGORY"
+        dataType="string"
+        selectedFilterOperation="contains"
+        allowGrouping="true"
+        groupIndex="0"
+      >
+      </dxi-column>
+      <dxi-column
+        dataField="price"
+        caption="PRICE"
+        dataType="number"
+        selectedFilterOperation="between"
+        allowGrouping="true"
+        cellTemplate="cellPrice"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+        <div *dxTemplate="let cellDataPrice of 'cellPrice'">
+          <app-price-symbol
+            [priceSymbol]="'$'"
+            [priceValue]="cellDataPrice.text"
+          ></app-price-symbol>
+        </div>
+      </dxi-column>
+      <dxi-column
+        dataField="rating"
+        caption="RATING"
+        dataType="number"
+        selectedFilterOperation="between"
+        allowGrouping="true"
+        allowHiding="true"
+        hidingPriority="4"
+        cellTemplate="cellRating"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+        <div *dxTemplate="let cellDataRating of 'cellRating'">
+          <app-star-rating
+            [ratingValue]="cellDataRating.value"
+            [ratingTxt]="cellDataRating.text"
+          ></app-star-rating>
+        </div>
+      </dxi-column>
+      <dxi-column
+        dataField="stock"
+        caption="STOCK"
+        dataType="number"
+        selectedFilterOperation="between"
+        allowGrouping="true"
+        allowHiding="true"
+        cellTemplate="cellStock"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="0"></dxo-format>
+        <div *dxTemplate="let cellDataStock of 'cellStock'">
+          <app-stock-badge
+            [stockValue]="cellDataStock.value"
+            [stockTxt]="cellDataStock.text"
+            [moqValue]="cellDataStock.data.minimumOrderQuantity"
+          >
+          </app-stock-badge>
+        </div>
+      </dxi-column>
+      <dxi-column
+        dataField="minimumOrderQuantity"
+        caption="MIN ORDER"
+        dataType="number"
+        selectedFilterOperation="between"
+        allowGrouping="true"
+        allowHiding="true"
+        hidingPriority="2"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="0"></dxo-format>
+      </dxi-column>
+      <dxi-column
+        dataField="brand"
+        caption="BRAND"
+        dataType="string"
+        selectedFilterOperation="contains"
+        allowGrouping="true"
+        allowHiding="true"
+        hidingPriority="1"
+      >
+      </dxi-column>
+    </dx-data-grid>
+  </div>
+</div>

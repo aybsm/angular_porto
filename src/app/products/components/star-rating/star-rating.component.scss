@@ -1,0 +1,80 @@
+.rating-star {
+    font-size: 14px; /* Ganti ukuran sesuai keinginan Anda (misalnya 14px, 18px) */
+    line-height: 1; /* Penting untuk alignment vertikal */
+}
+
+/* Jika Anda menggunakan ikon bintang berulang, pastikan ada sedikit jarak */
+.rating-container {
+    span.rating-star {
+        margin-right: 2px;
+    }
+}
+
+/* =======================================================
+   Star Rating Component Styling
+   Menggunakan penting (!) untuk menimpa gaya DevExtreme
+   ======================================================= */
+
+/* Variabel Styling */
+$star-filled-color: gold;
+$star-empty-color: #ccc;
+$star-size: 18px;
+
+/* --- FONT (Gunakan Unicode jika Font Awesome Gagal) ---
+   Font Awesome Icon Code: \f005 
+   Unicode Star Code: \2605 
+*/
+$star-icon: "\e838"; // <-- Menggunakan Unicode Star (Fallback Aman)
+
+.rating-control {
+    // 1. Mengatasi Konflik DevExtreme Base Styles
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    height: $star-size !important;
+    line-height: $star-size; // Menjaga vertikal alignment
+    
+    // Pastikan teks rating (jika ada) tersembunyi
+    .dx-progressbar-label {
+        display: none !important;
+    }
+
+    // 2. Kontainer Bintang Kosong (Base Layer)
+    .dx-progressbar-container {
+        height: 100% !important;
+        overflow: visible !important;
+        
+        // Tampilkan 5 bintang kosong (Base Star Icons)
+        &::before {
+            content: "#{$star-icon} #{$star-icon} #{$star-icon} #{$star-icon} #{$star-icon}";
+            font-size: $star-size;
+            color: $star-empty-color;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            white-space: nowrap;
+            letter-spacing: 2px; /* Jarak antar bintang */
+        }
+    }
+
+    // 3. Range yang Terisi (Filling Layer)
+    .dx-progressbar-range {
+        // Hapus warna bawaan dan style range
+        background-color: transparent !important;
+        position: relative;
+        overflow: hidden !important; /* Wajib untuk clipping */
+        
+        // Tampilkan 5 bintang terisi (Filling Star Icons)
+        &::before {
+            content: "#{$star-icon} #{$star-icon} #{$star-icon} #{$star-icon} #{$star-icon}";
+            font-size: $star-size;
+            color: $star-filled-color;
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: nowrap;
+            letter-spacing: 2px; /* Samakan dengan base layer */
+        }
+    }
+}

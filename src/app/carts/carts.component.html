@@ -1,0 +1,116 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <!-- id,totalProducts,totalQuantity,discountedTotal,total,products -->
+    <dx-data-grid
+      id="grid-carts"
+      [dataSource]="dataSource"
+      [showBorders]="true"
+      [focusedRowEnabled]="true"
+      [hoverStateEnabled]="true"
+      [allowColumnReordering]="true"
+      [rowAlternationEnabled]="true"
+      [showColumnLines]="true"
+      [showRowLines]="true"
+      [height]="'100%'"
+      [width]="'100%'"
+      [remoteOperations]="false"
+      [columnHidingEnabled]="true"
+      [elementAttr]="{ id: 'elementId', class: 'center-header-text' }"
+      (onCellPrepared)="onCellPreparedHandler($event)"
+    >
+      <dxo-load-panel
+        [enabled]="true"
+        [text]="'Loading...'"
+        [showIndicator]="true"
+        [showPane]="true"
+        [shading]="true"
+        [shadingColor]="'rgba(0,0,0,0.4)'"
+      ></dxo-load-panel>
+      <dxo-scrolling [mode]="'on'" [showScrollbar]="'always'"> </dxo-scrolling>
+      <dxo-filter-row [visible]="true" [applyFilter]="'auto'"> </dxo-filter-row>
+      <dxo-header-filter [visible]="true"> </dxo-header-filter>
+      <dxo-paging [pageSize]="15"> </dxo-paging>
+      <dxo-pager
+        [visible]="true"
+        [showPageSizeSelector]="true"
+        [showInfo]="true"
+        [showNavigationButtons]="true"
+        [allowedPageSizes]="[10, 15, 20, 25, 50, 100]"
+      >
+      </dxo-pager>
+      <dxo-search-panel [visible]="true" [highlightCaseSensitive]="false">
+      </dxo-search-panel>
+      <dxo-grouping [contextMenuEnabled]="true" [autoExpandAll]="true">
+      </dxo-grouping>
+      <dxo-group-panel [visible]="true" [allowColumnDragging]="true">
+      </dxo-group-panel>
+
+      <dxi-column
+        dataField="id"
+        caption="ID"
+        dataType="number"
+        selectedFilterOperation="="
+        allowHiding="true"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="0"></dxo-format>
+      </dxi-column>
+      <dxi-column caption="TOTAL OF">
+        <dxi-column
+          dataField="totalProducts"
+          caption="SKU"
+          dataType="number"
+          selectedFilterOperation="between"
+          allowHiding="true"
+          cellTemplate="cellsku"
+        >
+          <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+          <div *dxTemplate="let mdl of 'cellsku'">
+            <app-symbol [symbol]="'view_in_ar'" [value]="mdl.text"></app-symbol>
+          </div>
+        </dxi-column>
+        <dxi-column
+          dataField="totalQuantity"
+          caption="QTY"
+          dataType="number"
+          selectedFilterOperation="between"
+          allowHiding="true"
+          cellTemplate="cellqty"
+        >
+          <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+          <div *dxTemplate="let mdl of 'cellqty'">
+            <app-symbol
+              [symbol]="'shopping_cart_checkout'"
+              [value]="mdl.text"
+            ></app-symbol>
+          </div>
+        </dxi-column>
+        <dxi-column
+          dataField="discountedTotal"
+          caption="DISC"
+          dataType="number"
+          selectedFilterOperation="between"
+          allowHiding="true"
+          cellTemplate="celldisc"
+        >
+          <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+          <div *dxTemplate="let mdl of 'celldisc'">
+            <app-symbol [symbol]="'discount'" [value]="mdl.text"></app-symbol>
+          </div>
+        </dxi-column>
+      </dxi-column>
+      <dxi-column
+        dataField="total"
+        caption="TOTAL"
+        dataType="number"
+        selectedFilterOperation="between"
+        allowHiding="true"
+        cellTemplate="celltotal"
+      >
+        <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+        <div *dxTemplate="let mdl of 'celltotal'">
+          <app-symbol [symbol]="'attach_money'" [value]="mdl.text"></app-symbol>
+        </div>
+      </dxi-column>
+    </dx-data-grid>
+  </div>
+</div>
