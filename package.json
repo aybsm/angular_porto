@@ -10,7 +10,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && ng serve -o",
-    "start-go": "ng serve --port 9095 --open"
+    "start-go": "ng serve --port 9095 --open",
+    "deploy": "ng build --configuration production --base-href /angular_porto/ && npx angular-cli-ghpages --dir dist"
   },
   "engines": {
     "node": "6.11.1",
