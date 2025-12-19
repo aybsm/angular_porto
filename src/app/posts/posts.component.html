@@ -46,10 +46,7 @@
       <dxo-group-panel [visible]="true" [allowColumnDragging]="true">
       </dxo-group-panel>
       <dxo-selection mode="single"></dxo-selection>
-      <dxo-master-detail
-        [enabled]="true"
-        template="detail"
-      ></dxo-master-detail>
+      <dxo-master-detail [enabled]="true" template="detail"></dxo-master-detail>
 
       <dxi-column
         dataField="id"
@@ -185,18 +182,56 @@
         hidingPriority="0"
       >
       </dxi-column>
-      
-      <div *dxTemplate="let mdl of 'detail'" class="border border-1 border-primary">
-        <div class="border border-1 border-danger d-flex flex-row">
-          <div class="">
-            <span class="border border-1 border-warning">{{ mdl.data.tags }}</span>
+
+      <!-- <div
+        *dxTemplate="let mdl of 'detail'"
+        class="d-flex align-items-stretch mb-2"
+      >
+        <div class="p-2 d-flex flex-column gap-1">
+          <div class="" *ngIf="mdl.data.tags && mdl.data.tags.length > 0">
+            <span
+              class="badge bg-warning text-dark border border-warning shadow-sm"
+              *ngFor="let tag of mdl.data.tags"
+            >
+              {{ tag }}
+            </span>
+            <small *ngIf="!mdl.data.tags?.length" class="text-muted"
+              >No tags</small
+            >
           </div>
-          <div class="">
-            <p class="border border-1 border-dark">{{ mdl.data.body }}</p>
+          <div class="p-2 flex-grow-1 bg-white" style="word-break: break-word">
+            <p class="mb-0 small text-dark lh-base">
+              {{ mdl.data.body }}
+            </p>
+          </div>
+        </div>
+      </div> -->
+
+      <div *dxTemplate="let mdl of 'detail'" class="d-flex align-items-stretch">
+        <div class="p-2 d-flex flex-column align-items-start">
+          <ng-container
+            *ngIf="mdl.data.tags && mdl.data.tags.length > 0; else noTags"
+          >
+            <span
+              class="badge badge-{{ getRandomColor() }} mb-1 px-1"
+              *ngFor="let tag of mdl.data.tags"
+            >
+              <h6 class="m-0">
+                {{ tag }}
+              </h6>
+            </span>
+          </ng-container>
+          <ng-template #noTags>
+            <small class="text-muted text-center italic">No tags</small>
+          </ng-template>
+        </div>
+
+        <div class="p-2 flex-grow-1">
+          <div class="mb-1 text-wrap">
+            {{ mdl.data.body }}
           </div>
         </div>
       </div>
-
     </dx-data-grid>
   </div>
 </div>

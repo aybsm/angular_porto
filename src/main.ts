@@ -22,8 +22,8 @@ import { AppModule } from "./app/app.module";
 import { environment } from "./environments/environment";
 import "hammerjs";
 
-import config from "devextreme/core/config";
-import { devextremeLicenseKey } from "./devextreme-license";
+// import config from "devextreme/core/config";
+// import { devextremeLicenseKey } from "./devextreme-license";
 
 // config({
 //   licenseKey: devextremeLicenseKey,

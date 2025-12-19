@@ -25,6 +25,16 @@ export class PostsComponent implements OnInit {
   dataSource: DataSource;
   collapsed = false;
 
+  badges: string[] = [
+    "primary",
+    "secondary",
+    "success",
+    "danger",
+    "warning",
+    "info",
+    // "light",
+    // "dark",
+  ];
   constructor(private postservice: PostsService) {
     this.dataSource = new DataSource({
       store: new CustomStore({
@@ -82,5 +92,10 @@ export class PostsComponent implements OnInit {
     }
 
     return (likes / views) * 100.0;
+  }
+  getRandomColor() {
+    return this.badges[
+      Math.floor(Math.random() * this.badges.length)
+    ];
   }
 }
