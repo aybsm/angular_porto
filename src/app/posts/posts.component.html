@@ -27,7 +27,12 @@
         [shading]="true"
         [shadingColor]="'rgba(0,0,0,0.4)'"
       ></dxo-load-panel>
-      <dxo-scrolling [mode]="'on'" [showScrollbar]="'always'"> </dxo-scrolling>
+      <!-- <dxo-scrolling [mode]="'on'" [showScrollbar]="'always'"> </dxo-scrolling> -->
+      <dxo-scrolling
+        mode="standard"
+        showScrollbar="always"
+        [useNative]="false"
+      ></dxo-scrolling>
       <dxo-filter-row [visible]="true" [applyFilter]="'auto'"> </dxo-filter-row>
       <dxo-header-filter [visible]="true"> </dxo-header-filter>
       <dxo-paging [pageSize]="15"> </dxo-paging>
