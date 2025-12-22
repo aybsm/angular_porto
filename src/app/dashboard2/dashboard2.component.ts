@@ -1,6 +1,13 @@
 import { Component, OnInit } from "@angular/core";
 import * as Chartist from "chartist";
+import { get } from "jquery";
 import { CartsService } from "services/carts.service";
+
+interface DailyChartModel {
+  index: number;
+  codes: string;
+  values: number;
+}
 
 @Component({
   selector: "app-dashboard2",
@@ -14,31 +21,25 @@ export class Dashboard2Component implements OnInit {
   TotalSavings: number = 0;
   TotalItemsSold: number = 0;
 
-  constructor(private cartsservice: CartsService) {
-    var data = cartsservice.getAllBy(25).subscribe((result) => {
-      console.log("Carts total items:", result.total);
-      this.TotalRevenue = result.carts.reduce(
-        (accumulator, current) => accumulator + current.total,
-        0
-      );
-      this.NetRevenue = result.carts.reduce(
-        (accumulator, current) => accumulator + current.discountedTotal,
-        0
-      );
-      this.TotalSavings = this.TotalRevenue - this.NetRevenue;
-      this.TotalItemsSold = result.carts.reduce(
-        (accumulator, current) => accumulator + current.totalQuantity,
-        0
-      );
-    });
-  }
+  dailyData: DailyChartModel[] = [
+    { index: 0, codes: "Sun", values: 0 },
+    { index: 1, codes: "Mon", values: 0 },
+    { index: 2, codes: "Tue", values: 0 },
+    { index: 3, codes: "Wed", values: 0 },
+    { index: 4, codes: "Thu", values: 0 },
+    { index: 5, codes: "Fri", values: 0 },
+    { index: 6, codes: "Sat", values: 0 },
+  ];
+  constructor(private cartsservice: CartsService) {}
   formatted(amount: number, min: number = 2, max: number = 2): string {
     return amount.toLocaleString("en-US", {
       minimumFractionDigits: min,
       maximumFractionDigits: max,
     });
   }
-
+  getRandomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
   startAnimationForLineChart(chart) {
     let seq: any, delays: any, durations: any;
     seq = 0;
@@ -99,12 +100,13 @@ export class Dashboard2Component implements OnInit {
 
     seq2 = 0;
   }
-  ngOnInit() {
+  initDailySalesChart() {
     /* ----------==========     Daily Sales Chart initialization For Documentation    ==========---------- */
-
-    const dataDailySalesChart: any = {
-      labels: ["M", "T", "W", "T", "F", "S", "S"],
-      series: [[12, 17, 7, 17, 23, 18, 38]],
+    let dataDailySalesChart: any = {
+      // labels: ["M", "T", "W", "T", "F", "S", "S"],
+      // series: [[12, 17, 7, 17, 23, 18, 38]],
+      labels: this.dailyData.map((item) => item.codes),
+      series: [this.dailyData.map((item) => item.values)],
     };
 
     const optionsDailySalesChart: any = {
@@ -123,37 +125,27 @@ export class Dashboard2Component implements OnInit {
     );
 
     this.startAnimationForLineChart(dailySalesChart);
-
-    /* ----------==========     Completed Tasks Chart initialization    ==========---------- */
-
-    const dataCompletedTasksChart: any = {
-      labels: ["12p", "3p", "6p", "9p", "12p", "3a", "6a", "9a"],
-      series: [[230, 750, 450, 300, 280, 240, 200, 190]],
-    };
-
-    const optionsCompletedTasksChart: any = {
-      lineSmooth: Chartist.Interpolation.cardinal({
-        tension: 0,
-      }),
-      low: 0,
-      high: 1000, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
-      chartPadding: { top: 0, right: 0, bottom: 0, left: 0 },
-    };
-
-    var completedTasksChart = new Chartist.Line(
-      "#completedTasksChart",
-      dataCompletedTasksChart,
-      optionsCompletedTasksChart
-    );
-
-    // start animation for the Completed Tasks Chart - Line Chart
-    this.startAnimationForLineChart(completedTasksChart);
-
+  }
+  initEmailsSubscriptionChart() {
     /* ----------==========     Emails Subscription Chart initialization    ==========---------- */
-
     var datawebsiteViewsChart = {
       labels: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
-      series: [[542, 443, 320, 780, 553, 453, 326, 434, 568, 610, 756, 895]],
+      series: [
+        [
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+        ],
+      ],
     };
     var optionswebsiteViewsChart = {
       axisX: {
@@ -185,5 +177,83 @@ export class Dashboard2Component implements OnInit {
 
     //start animation for the Emails Subscription Chart
     this.startAnimationForBarChart(websiteViewsChart);
+  }
+  initCompletedTasksChart() {
+    /* ----------==========     Completed Tasks Chart initialization    ==========---------- */
+    const dataCompletedTasksChart: any = {
+      labels: [
+        "00:00",
+        "03:00",
+        "06:00",
+        "09:00",
+        "12:00",
+        "15:00",
+        "18:00",
+        "21:00",
+      ],
+      series: [
+        [
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+          this.getRandomNumber(100, 1000),
+        ],
+      ],
+    };
+
+    const optionsCompletedTasksChart: any = {
+      lineSmooth: Chartist.Interpolation.cardinal({
+        tension: 0,
+      }),
+      low: 0,
+      high: 1000, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
+      chartPadding: { top: 0, right: 0, bottom: 0, left: 0 },
+    };
+
+    var completedTasksChart = new Chartist.Line(
+      "#completedTasksChart",
+      dataCompletedTasksChart,
+      optionsCompletedTasksChart
+    );
+
+    // start animation for the Completed Tasks Chart - Line Chart
+    this.startAnimationForLineChart(completedTasksChart);
+  }
+  ngOnInit() {
+    var data = this.cartsservice.getAllBy(25).subscribe((result) => {
+      console.log("Carts total items:", result.total);
+      this.TotalRevenue = result.carts.reduce(
+        (accumulator, current) => accumulator + current.total,
+        0
+      );
+      this.NetRevenue = result.carts.reduce(
+        (accumulator, current) => accumulator + current.discountedTotal,
+        0
+      );
+      this.TotalSavings = this.TotalRevenue - this.NetRevenue;
+      this.TotalItemsSold = result.carts.reduce(
+        (accumulator, current) => accumulator + current.totalQuantity,
+        0
+      );
+
+      result.carts.forEach((cart) => {
+        let today = new Date();
+        let yesterday = new Date(today.getDate() - (cart.id - 1));
+        let day = yesterday.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+        let daily = this.dailyData.find((d) => d.index === day);
+        if (daily) {
+          // daily.values += cart.total;
+          daily.values += 1;
+        }
+      });
+
+      this.initDailySalesChart();
+      this.initEmailsSubscriptionChart();
+      this.initCompletedTasksChart();
+    });
   }
 }

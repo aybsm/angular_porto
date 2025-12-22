@@ -9,14 +9,15 @@
             </div>
             <p class="card-category">Total Revenue</p>
             <h3 class="card-title">
-              ${{ formatted(TotalRevenue) }}
+              <!-- ${{ formatted(TotalRevenue) }} -->
+              ${{ TotalRevenue | formatCompact }}
               <!-- <small>GB</small> -->
             </h3>
           </div>
           <div class="card-footer">
             <div class="stats">
               <i class="material-icons text-danger">shopping_cart_checkout</i>
-              <a href="javascript:void(0)">Carts details...</a>
+              <a href="javascript:void(0)">Carts Details...</a>
             </div>
           </div>
         </div>
@@ -28,7 +29,8 @@
               <i class="material-icons">paid</i>
             </div>
             <p class="card-category">Net Revenue</p>
-            <h3 class="card-title">${{ formatted(NetRevenue) }}</h3>
+            <!-- <h3 class="card-title">${{ formatted(NetRevenue) }}</h3> -->
+            <h3 class="card-title">${{ NetRevenue | formatCompact }}</h3>
           </div>
           <div class="card-footer">
             <div class="stats">
@@ -44,12 +46,13 @@
               <i class="material-icons">redeem</i>
             </div>
             <p class="card-category">Total Savings</p>
-            <h3 class="card-title">${{ formatted(TotalSavings) }}</h3>
+            <!-- <h3 class="card-title">${{ formatted(TotalSavings) }}</h3> -->
+            <h3 class="card-title">${{ TotalSavings | formatCompact }}</h3>
           </div>
           <div class="card-footer">
             <div class="stats">
-              <i class="material-icons">local_offer</i> aggressive your
-              promotion
+              <i class="material-icons">local_offer</i> Aggressive Your
+              Promotion
             </div>
           </div>
         </div>
@@ -62,7 +65,8 @@
               <i class="material-icons">inventory_2</i>
             </div>
             <p class="card-category">Total Items Sold</p>
-            <h3 class="card-title">{{ formatted(TotalItemsSold, 0, 0) }}</h3>
+            <!-- <h3 class="card-title">{{ formatted(TotalItemsSold, 0, 0) }}</h3> -->
+            <h3 class="card-title">{{ TotalItemsSold | formatCompact }}</h3>
           </div>
           <div class="card-footer">
             <div class="stats">
