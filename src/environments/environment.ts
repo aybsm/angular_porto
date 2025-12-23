@@ -7,6 +7,6 @@ export const environment = {
   production: false,
 
   dummyjson: {
-    baseurl: "https://dummyjson.com",
+    baseurl: "data",
   },
 };

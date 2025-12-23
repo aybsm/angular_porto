@@ -16,8 +16,9 @@ export class FormatCompactPipe implements PipeTransform {
     } else if (value >= 10000) {
       // return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K";
       return this.formatted(value / 1000, 1, 1).replace(/\.0$/, "") + "K";
-    // } else if (value >= 1000) {
-    //   return (value / 1).toFixed(1).replace(/\.0$/, "") + "K";
+    } else {
+      // return (value / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+      return this.formatted(value, 0, 0).replace(/\.0$/, "");
     }
     return value;
   }

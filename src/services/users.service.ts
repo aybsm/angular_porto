@@ -6,21 +6,20 @@ import { environment } from "../environments/environment";
 
 export interface UserModel {
   id: number;
-  totalProducts:number;
-  totalQuantity:number;
-  discountedTotal:number;
-  total:number;
+  totalProducts: number;
+  totalQuantity: number;
+  discountedTotal: number;
+  total: number;
 }
 
 @Injectable()
 export class UsersService {
-  private apiUrl =
-    `${environment.dummyjson.baseurl}/users?limit=25`;
+  private apiUrl = environment.production && false
+    ? `${environment.dummyjson.baseurl}/users?limit=25`
+    : `${environment.dummyjson.baseurl}/users.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ carts: UserModel[]; total: number }> {
-    return this.http.get<{ carts: UserModel[]; total: number }>(
-      this.apiUrl
-    );
+    return this.http.get<{ carts: UserModel[]; total: number }>(this.apiUrl);
   }
 }

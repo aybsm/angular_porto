@@ -1,6 +1,5 @@
 import { Component, OnInit } from "@angular/core";
 import * as Chartist from "chartist";
-import { get } from "jquery";
 import { CartsService } from "services/carts.service";
 
 interface DailyChartModel {
@@ -101,12 +100,26 @@ export class Dashboard2Component implements OnInit {
     seq2 = 0;
   }
   initDailySalesChart() {
+    // let day = new Date().getDate();
+    // let datadailyordered: DailyChartModel[] = [];
+    // this.dailyData
+    //   .filter((d) => d.index >= day)
+    //   .forEach((d) => datadailyordered.push(d));
+    // this.dailyData
+    //   .filter((d) => d.index < day)
+    //   .forEach((d) => datadailyordered.push(d));
+
+    // console.log("Daily Data:", this.dailyData);
+    // console.log("Daily Data Ordered:", datadailyordered);
+
     /* ----------==========     Daily Sales Chart initialization For Documentation    ==========---------- */
     let dataDailySalesChart: any = {
       // labels: ["M", "T", "W", "T", "F", "S", "S"],
       // series: [[12, 17, 7, 17, 23, 18, 38]],
       labels: this.dailyData.map((item) => item.codes),
       series: [this.dailyData.map((item) => item.values)],
+      // labels: datadailyordered.map((item) => item.codes),
+      // series: [datadailyordered.map((item) => item.values)],
     };
 
     const optionsDailySalesChart: any = {
@@ -114,8 +127,9 @@ export class Dashboard2Component implements OnInit {
         tension: 0,
       }),
       low: 0,
-      high: 50, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
-      chartPadding: { top: 0, right: 0, bottom: 0, left: 0 },
+      // high: 50, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
+      high: null,
+      chartPadding: { top: 0, right: 0, bottom: 0, left: 15 },
     };
 
     var dailySalesChart = new Chartist.Line(
@@ -241,13 +255,16 @@ export class Dashboard2Component implements OnInit {
       );
 
       result.carts.forEach((cart) => {
-        let today = new Date();
-        let yesterday = new Date(today.getDate() - (cart.id - 1));
-        let day = yesterday.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+        // let today = new Date();
+        // let yesterday = new Date();
+        // yesterday.setDate(today.getDate() - (cart.id - 1));
+        // // let day = yesterday.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+        let day = this.getRandomNumber(0, 6);
         let daily = this.dailyData.find((d) => d.index === day);
         if (daily) {
-          // daily.values += cart.total;
-          daily.values += 1;
+          // daily.values += cart.totalProducts;
+          daily.values += cart.total;
+          // daily.values += 1;
         }
       });
 

@@ -19,7 +19,9 @@ export interface ReactionModel {
 
 @Injectable()
 export class PostsService {
-  private apiUrl = `${environment.dummyjson.baseurl}/posts?limit=25&skip=&select=id,title,views,reactions,tags,body`;
+  private apiUrl = environment.production && false
+    ? `${environment.dummyjson.baseurl}/posts?limit=25&skip=&select=id,title,views,reactions,tags,body`
+    : `${environment.dummyjson.baseurl}/posts.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ posts: PostModel[]; total: number }> {

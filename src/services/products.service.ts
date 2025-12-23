@@ -22,8 +22,9 @@ export interface ProductModel {
 // })
 @Injectable()
 export class ProductsService {
-  private apiUrl =
-    `${environment.dummyjson.baseurl}/products?limit=25&skip=&select=id,sku,title,category,price,rating,stock,minimumOrderQuantity,brand`;
+  private apiUrl = environment.production && false
+    ? `${environment.dummyjson.baseurl}/products?limit=25&skip=&select=id,sku,title,category,price,rating,stock,minimumOrderQuantity,brand`
+    : `${environment.dummyjson.baseurl}/products.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ products: ProductModel[]; total: number }> {

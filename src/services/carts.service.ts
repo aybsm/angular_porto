@@ -26,8 +26,12 @@ export interface ProductModel {
 
 @Injectable()
 export class CartsService {
-  private apiUrl = `${environment.dummyjson.baseurl}/carts?limit=25&skip=&select=id,totalProducts,totalQuantity,discountedTotal,total,products`;
-  private apiUrlByLimit = `${environment.dummyjson.baseurl}/carts?limit={{limit}}&skip={{skip}}`;
+  private apiUrl = environment.production && false
+    ? `${environment.dummyjson.baseurl}/carts?limit=25&skip=&select=id,totalProducts,totalQuantity,discountedTotal,total,products`
+    : `${environment.dummyjson.baseurl}/carts.json`;
+  private apiUrlByLimit = environment.production && false
+    ? `${environment.dummyjson.baseurl}/carts?limit={{limit}}&skip={{skip}}`
+    : `${environment.dummyjson.baseurl}/carts.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ carts: CartModel[]; total: number }> {
@@ -37,15 +41,16 @@ export class CartsService {
     return this.http.get<any>(this.getUrl(limit, 0)).pipe(
       switchMap((firstResponse) => {
         const total = firstResponse.total;
+        const xlimit = firstResponse.limit;
         const firstPageCarts = firstResponse.carts;
 
-        if (total <= limit) {
+        if (total <= xlimit) {
           return of({ carts: firstPageCarts, total: total });
         }
 
         const remainingRequests: Observable<any>[] = [];
-        for (let skip = limit; skip < total; skip += limit) {
-          remainingRequests.push(this.http.get<any>(this.getUrl(limit, skip)));
+        for (let skip = xlimit; skip < total; skip += xlimit) {
+          remainingRequests.push(this.http.get<any>(this.getUrl(xlimit, skip)));
         }
 
         return forkJoin(remainingRequests).pipe(
