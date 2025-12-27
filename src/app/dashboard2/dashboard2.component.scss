@@ -8,11 +8,11 @@
       white-space: nowrap;
 
       // Proses pemutaran
-      transform: rotate(-35deg);
+      transform: rotate(-60deg);
       transform-origin: 0 0; // Putar dari titik sudut kiri atas
 
       //   // Geser sedikit agar presisi di bawah batang bar
-      margin-top: 10px;
+      margin-top: 15px;
       margin-left: -10px;
 
       text-align: right;
@@ -20,4 +20,30 @@
       //   color: rgba(255, 255, 255, 0.8); // Agar teks lebih kontras di atas oranye
     }
   }
+//   #dailySalesChart {
+//     .ct-label.ct-horizontal {
+//       display: block;
+//       width: 100px;
+//       word-break: break-all;
+//       white-space: nowrap;
+//       transform: rotate(-60deg);
+//       transform-origin: 0 0;
+//       margin-top: 15px;
+//       margin-left: -10px;
+//       text-align: right;
+//     }
+//   }
+//   #hourlyTransactionsChart {
+//     .ct-label.ct-horizontal {
+//       display: block;
+//       width: 100px;
+//       word-break: break-all;
+//       white-space: nowrap;
+//       transform: rotate(-60deg);
+//       transform-origin: 0 0;
+//       margin-top: 15px;
+//       margin-left: -10px;
+//       text-align: right;
+//     }
+//   }
 }

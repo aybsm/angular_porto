@@ -4,7 +4,8 @@ import { data, get, map } from "jquery";
 import { dirname } from "path";
 import { CartModel, CartsService } from "services/carts.service";
 import { ProductsService } from "services/products.service";
-import { forkJoin } from "rxjs";
+import { UserModel, UsersService } from "services/users.service";
+import { forkJoin, of } from "rxjs";
 import { time } from "console";
 
 interface DailyChartModel {
@@ -17,27 +18,31 @@ interface DailyChartModel {
   selector: "app-dashboard2",
   templateUrl: "./dashboard2.component.html",
   styleUrls: ["./dashboard2.component.scss"],
-  providers: [CartsService, ProductsService],
+  providers: [CartsService, ProductsService, UsersService],
 })
 export class Dashboard2Component implements OnInit {
+  Now = Date;
   TotalRevenue: number = 0;
   NetRevenue: number = 0;
   TotalSavings: number = 0;
   TotalItemsSold: number = 0;
   DiffPercSales: number = 0;
 
+  UserShoppingSource: any = [];
+
   dailyData: DailyChartModel[] = [
-    { index: 0, codes: "Sun", values: 0 },
-    { index: 1, codes: "Mon", values: 0 },
-    { index: 2, codes: "Tue", values: 0 },
-    { index: 3, codes: "Wed", values: 0 },
-    { index: 4, codes: "Thu", values: 0 },
-    { index: 5, codes: "Fri", values: 0 },
-    { index: 6, codes: "Sat", values: 0 },
+    { index: 0, codes: "Su", values: 0 },
+    { index: 1, codes: "Mo", values: 0 },
+    { index: 2, codes: "Tu", values: 0 },
+    { index: 3, codes: "We", values: 0 },
+    { index: 4, codes: "Th", values: 0 },
+    { index: 5, codes: "Fr", values: 0 },
+    { index: 6, codes: "Sa", values: 0 },
   ];
   constructor(
     private cartsservice: CartsService,
-    private productsservice: ProductsService
+    private productsservice: ProductsService,
+    private usersservice: UsersService
   ) {}
   formatted(amount: number, min: number = 2, max: number = 2): string {
     return amount.toLocaleString("en-US", {
@@ -293,14 +298,14 @@ export class Dashboard2Component implements OnInit {
   }
   initHourlyTransactionsChart(carts: CartModel[] = null) {
     var source = [
-      { key: "00:00", s: "00:00:00", e: "02:59:59" },
-      { key: "03:00", s: "03:00:00", e: "05:59:59" },
-      { key: "06:00", s: "06:00:00", e: "08:59:59" },
-      { key: "09:00", s: "09:00:00", e: "11:59:59" },
-      { key: "12:00", s: "12:00:00", e: "14:59:59" },
-      { key: "15:00", s: "15:00:00", e: "17:59:59" },
-      { key: "18:00", s: "18:00:00", e: "20:59:59" },
-      { key: "21:00", s: "21:00:00", e: "23:59:59" },
+      { key: "0a", s: "00:00:00", e: "02:59:59" },
+      { key: "3a", s: "03:00:00", e: "05:59:59" },
+      { key: "6a", s: "06:00:00", e: "08:59:59" },
+      { key: "9a", s: "09:00:00", e: "11:59:59" },
+      { key: "12p", s: "12:00:00", e: "14:59:59" },
+      { key: "3p", s: "15:00:00", e: "17:59:59" },
+      { key: "6p", s: "18:00:00", e: "20:59:59" },
+      { key: "9p", s: "21:00:00", e: "23:59:59" },
     ];
     const hourlyData = source.map((interval) => {
       // Hitung berapa banyak cart yang masuk dalam rentang waktu ini
@@ -341,6 +346,57 @@ export class Dashboard2Component implements OnInit {
 
     // start animation for the Completed Tasks Chart - Line Chart
     this.startAnimationForLineChart(hourlyTransactionsChart);
+  }
+  initTopCustomer(carts: CartModel[] = null) {
+    forkJoin({
+      j_users: this.usersservice.get(),
+      j_carts: of(carts),
+    }).subscribe(({ j_users, j_carts }) => {
+      // const userShoppingReport = j_carts.map((cart) => {
+      //   const user = j_users.users.find((u) => u.id === cart.userId);
+      //   return {
+      //     no: 0,
+      //     name: user ? `${user.firstName} ${user.lastName}` : "Unknown User",
+      //     city: user ? user.address.city : "Unknown",
+      //     country: user ? user.address.country : "Unknown",
+      //     total: cart.discountedTotal,
+      //     qty: cart.totalQuantity,
+      //   };
+      // });
+
+      const user_grouped = carts.reduce((acc: Record<string, any>, cart) => {
+        const user = j_users.users.find((u) => u.id === cart.userId);
+        const name = user
+          ? `${user.firstName} ${user.lastName}`
+          : "Unknown User";
+
+        if (!acc[name]) {
+          acc[name] = {
+            no: 0,
+            name: name,
+            city: user ? user.address.city : "Unknown",
+            country: user ? user.address.country : "Unknown",
+            total: 0,
+            qty: 0,
+            trx: 0,
+          };
+        }
+        acc[name].total += cart.discountedTotal;
+        acc[name].qty += cart.totalQuantity;
+        acc[name].trx += 1;
+        return acc;
+      }, {});
+
+      // console.log(userShoppingReport);
+      const user_final = Object.values(user_grouped)
+        .sort((x, z) => z.total - x.total)
+        .slice(0, 5)
+        .map((elmnt, index) => {
+          elmnt.no = index + 1;
+          return elmnt;
+        });
+      this.UserShoppingSource = user_final;
+    });
   }
   ngOnInit() {
     var data = this.cartsservice.getAllBy(25).subscribe((result) => {
@@ -386,6 +442,7 @@ export class Dashboard2Component implements OnInit {
       this.initDailySalesChart();
       this.initCategoryPerformanceChart(result.carts);
       this.initHourlyTransactionsChart(result.carts);
+      this.initTopCustomer(result.carts);
     });
   }
 }

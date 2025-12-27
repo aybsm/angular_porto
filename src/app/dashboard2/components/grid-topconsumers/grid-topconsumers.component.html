@@ -1,0 +1,98 @@
+<dx-data-grid
+  id="grid-posts"
+  [dataSource]="DataSource"
+  [showBorders]="false"
+  [focusedRowEnabled]="false"
+  [hoverStateEnabled]="false"
+  [allowColumnReordering]="false"
+  [rowAlternationEnabled]="false"
+  [showColumnLines]="false"
+  [showRowLines]="false"
+  [height]="'100%'"
+  [width]="'100%'"
+  [remoteOperations]="false"
+  [columnHidingEnabled]="false"
+  [elementAttr]="{ id: 'elementId', class: 'center-header-text' }"
+>
+  <dxo-load-panel
+    [enabled]="false"
+    [text]="'Loading...'"
+    [showIndicator]="true"
+    [showPane]="true"
+    [shading]="true"
+    [shadingColor]="'rgba(0,0,0,0.4)'"
+  ></dxo-load-panel>
+  <dxo-scrolling
+    mode="standard"
+    showScrollbar="always"
+    [useNative]="false"
+  ></dxo-scrolling>
+  <dxo-filter-row [visible]="false" [applyFilter]="'auto'"> </dxo-filter-row>
+  <dxo-header-filter [visible]="false"> </dxo-header-filter>
+  <dxo-paging [pageSize]="15"> </dxo-paging>
+  <dxo-pager
+    [visible]="false"
+    [showPageSizeSelector]="true"
+    [showInfo]="true"
+    [showNavigationButtons]="true"
+    [allowedPageSizes]="[10, 15, 20, 25, 50, 100]"
+  >
+  </dxo-pager>
+  <dxo-search-panel [visible]="false" [highlightCaseSensitive]="false">
+  </dxo-search-panel>
+  <dxo-grouping [contextMenuEnabled]="false" [autoExpandAll]="true">
+  </dxo-grouping>
+  <dxo-group-panel [visible]="false" [allowColumnDragging]="true">
+  </dxo-group-panel>
+  <dxo-sorting mode="none"></dxo-sorting>
+
+  <dxi-column
+    dataField="no"
+    caption="NO"
+    dataType="number"
+    selectedFilterOperation="="
+    allowHiding="false"
+    width="auto"
+  >
+    <dxo-format [type]="'fixedPoint'" [precision]="0"></dxo-format>
+  </dxi-column>
+  <dxi-column
+    dataField="name"
+    caption="NAME"
+    dataType="string"
+    selectedFilterOperation="contains"
+  >
+  </dxi-column>
+  <dxi-column
+    dataField="total"
+    caption="TOTAL"
+    selectedFilterOperation="between"
+    cellTemplate="celltotal"
+    width="auto"
+  >
+    <dxo-format [type]="'fixedPoint'" [precision]="2"></dxo-format>
+    <div *dxTemplate="let mdl of 'celltotal'">
+      <!-- <pre>{{ mdl.data | json }}</pre> -->
+      <app-symbol
+        [symbol]="'attach_money'"
+        [symbolcls]="'text-warning'"
+        [value]="mdl.text"
+        [state]="mdl.data.qty + ' qty of ' + mdl.data.trx + ' trx'"
+      ></app-symbol>
+    </div>
+  </dxi-column>
+  <dxi-column
+    dataField="city"
+    caption="CITY"
+    dataType="string"
+    selectedFilterOperation="contains"
+  >
+  </dxi-column>
+  <dxi-column
+    dataField="country"
+    caption="COUNTRY"
+    dataType="string"
+    selectedFilterOperation="contains"
+  >
+  </dxi-column>
+</dx-data-grid>

@@ -13,6 +13,7 @@ export interface CartModel {
   discountedTotal: number;
   total: number;
   products: ProductModel[];
+  userId: number;
 }
 export interface ProductModel {
   id: number;
