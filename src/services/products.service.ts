@@ -13,6 +13,11 @@ export interface ProductModel {
   stock: number;
   brand: string;
 }
+export interface ProductCategoryModel {
+  slug: string;
+  name: string;
+  url: string;
+}
 
 // @Injectable({
 //   // Jika providedIn: 'root': Service akan dimuat di bundle utama (main.js). Artinya, kode service akan diunduh bahkan jika pengguna belum pernah mengunjungi halaman Produk.
@@ -22,9 +27,14 @@ export interface ProductModel {
 // })
 @Injectable()
 export class ProductsService {
-  private apiUrl = environment.production && false
-    ? `${environment.dummyjson.baseurl}/products?limit=25&skip=&select=id,sku,title,category,price,rating,stock,minimumOrderQuantity,brand`
-    : `${environment.dummyjson.baseurl}/products.json`;
+  private apiUrl =
+    environment.production && false
+      ? `${environment.dummyjson.baseurl}/products?limit=25&skip=&select=id,sku,title,category,price,rating,stock,minimumOrderQuantity,brand`
+      : `${environment.dummyjson.baseurl}/products.json`;
+  private apiUrlCategories =
+    environment.production && false
+      ? `${environment.dummyjson.baseurl}/products/categories`
+      : `${environment.dummyjson.baseurl}/products-categories.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ products: ProductModel[]; total: number }> {
@@ -35,4 +45,7 @@ export class ProductsService {
   // get(): Observable<ProductModel[]> {
   //   return this.http.get<ProductModel[]>(this.apiUrl);
   // }
+  getCategories(): Observable<ProductCategoryModel[]> {
+    return this.http.get<ProductCategoryModel[]>(this.apiUrlCategories);
+  }
 }

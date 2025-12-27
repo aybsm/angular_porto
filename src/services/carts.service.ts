@@ -7,6 +7,7 @@ import { environment } from "../environments/environment";
 
 export interface CartModel {
   id: number;
+  date: Date;
   totalProducts: number;
   totalQuantity: number;
   discountedTotal: number;
@@ -26,12 +27,14 @@ export interface ProductModel {
 
 @Injectable()
 export class CartsService {
-  private apiUrl = environment.production && false
-    ? `${environment.dummyjson.baseurl}/carts?limit=25&skip=&select=id,totalProducts,totalQuantity,discountedTotal,total,products`
-    : `${environment.dummyjson.baseurl}/carts.json`;
-  private apiUrlByLimit = environment.production && false
-    ? `${environment.dummyjson.baseurl}/carts?limit={{limit}}&skip={{skip}}`
-    : `${environment.dummyjson.baseurl}/carts.json`;
+  private apiUrl =
+    environment.production && false
+      ? `${environment.dummyjson.baseurl}/carts?limit=25&skip=&select=id,totalProducts,totalQuantity,discountedTotal,total,products`
+      : `${environment.dummyjson.baseurl}/carts.json`;
+  private apiUrlByLimit =
+    environment.production && false
+      ? `${environment.dummyjson.baseurl}/carts?limit={{limit}}&skip={{skip}}`
+      : `${environment.dummyjson.baseurl}/carts.json`;
 
   constructor(private http: HttpClient) {}
   get(): Observable<{ carts: CartModel[]; total: number }> {

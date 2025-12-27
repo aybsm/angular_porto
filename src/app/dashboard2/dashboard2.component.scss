@@ -1,0 +1,23 @@
+// Tambahkan ini di file .scss komponen kamu
+::ng-deep {
+  #categoryPerformanceChart {
+    .ct-label.ct-horizontal {
+      display: block;
+      width: 100px; // Beri lebar agar teks punya ruang untuk berputar
+      word-break: break-all;
+      white-space: nowrap;
+
+      // Proses pemutaran
+      transform: rotate(-35deg);
+      transform-origin: 0 0; // Putar dari titik sudut kiri atas
+
+      //   // Geser sedikit agar presisi di bawah batang bar
+      margin-top: 10px;
+      margin-left: -10px;
+
+      text-align: right;
+      //     font-size: 10px;
+      //   color: rgba(255, 255, 255, 0.8); // Agar teks lebih kontras di atas oranye
+    }
+  }
+}

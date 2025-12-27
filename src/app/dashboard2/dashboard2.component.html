@@ -85,10 +85,24 @@
           <div class="card-body">
             <h4 class="card-title">Daily Sales</h4>
             <p class="card-category">
-              <span class="text-success"
+              <!-- <span class="text-success"
                 ><i class="fa fa-long-arrow-up"></i> 55%
               </span>
-              increase in today sales.
+              increase in today sales. -->
+              <ng-container *ngIf="DiffPercSales > 0; else lossTag">
+                <span class="text-success"
+                  ><i class="fa fa-long-arrow-up"></i>
+                  {{ DiffPercSales | number : "1.2-2" }}%
+                </span>
+                increase in today sales.
+              </ng-container>
+              <ng-template #lossTag>
+                <span class="text-danger"
+                  ><i class="fa fa-long-arrow-down"></i>
+                  {{ DiffPercSales | number : "1.2-2" }}%
+                </span>
+                decrease in today sales.
+              </ng-template>
             </p>
           </div>
           <div class="card-footer">
@@ -101,15 +115,16 @@
       <div class="col-md-4">
         <div class="card card-chart">
           <div class="card-header card-header-warning">
-            <div class="ct-chart" id="websiteViewsChart"></div>
+            <div class="ct-chart" id="categoryPerformanceChart"></div>
           </div>
           <div class="card-body">
-            <h4 class="card-title">Email Subscriptions</h4>
-            <p class="card-category">Last Campaign Performance</p>
+            <h4 class="card-title">Category Performance</h4>
+            <p class="card-category">Top 15 Category Performance</p>
           </div>
           <div class="card-footer">
             <div class="stats">
-              <i class="material-icons">access_time</i> campaign sent 2 days ago
+              <i class="material-icons">access_time</i> category count 4 minutes
+              ago
             </div>
           </div>
         </div>
@@ -117,15 +132,16 @@
       <div class="col-md-4">
         <div class="card card-chart">
           <div class="card-header card-header-danger">
-            <div class="ct-chart" id="completedTasksChart"></div>
+            <div class="ct-chart" id="hourlyTransactionsChart"></div>
           </div>
           <div class="card-body">
-            <h4 class="card-title">Completed Tasks</h4>
-            <p class="card-category">Last Campaign Performance</p>
+            <h4 class="card-title">Hourly Transactions</h4>
+            <p class="card-category">Peak hour performance</p>
           </div>
           <div class="card-footer">
             <div class="stats">
-              <i class="material-icons">access_time</i> campaign sent 2 days ago
+              <i class="material-icons">access_time</i> transaction capture 5
+              minutes ago
             </div>
           </div>
         </div>

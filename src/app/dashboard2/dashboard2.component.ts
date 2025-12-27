@@ -1,6 +1,11 @@
 import { Component, OnInit } from "@angular/core";
 import * as Chartist from "chartist";
-import { CartsService } from "services/carts.service";
+import { data, get, map } from "jquery";
+import { dirname } from "path";
+import { CartModel, CartsService } from "services/carts.service";
+import { ProductsService } from "services/products.service";
+import { forkJoin } from "rxjs";
+import { time } from "console";
 
 interface DailyChartModel {
   index: number;
@@ -12,13 +17,14 @@ interface DailyChartModel {
   selector: "app-dashboard2",
   templateUrl: "./dashboard2.component.html",
   styleUrls: ["./dashboard2.component.scss"],
-  providers: [CartsService],
+  providers: [CartsService, ProductsService],
 })
 export class Dashboard2Component implements OnInit {
   TotalRevenue: number = 0;
   NetRevenue: number = 0;
   TotalSavings: number = 0;
   TotalItemsSold: number = 0;
+  DiffPercSales: number = 0;
 
   dailyData: DailyChartModel[] = [
     { index: 0, codes: "Sun", values: 0 },
@@ -29,7 +35,10 @@ export class Dashboard2Component implements OnInit {
     { index: 5, codes: "Fri", values: 0 },
     { index: 6, codes: "Sat", values: 0 },
   ];
-  constructor(private cartsservice: CartsService) {}
+  constructor(
+    private cartsservice: CartsService,
+    private productsservice: ProductsService
+  ) {}
   formatted(amount: number, min: number = 2, max: number = 2): string {
     return amount.toLocaleString("en-US", {
       minimumFractionDigits: min,
@@ -38,6 +47,12 @@ export class Dashboard2Component implements OnInit {
   }
   getRandomNumber(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  getRandomDate(start: Date, end: Date): Date {
+    const startTime = start.getTime();
+    const endTime = end.getTime();
+    const randomTime = startTime + Math.random() * (endTime - startTime);
+    return new Date(randomTime);
   }
   startAnimationForLineChart(chart) {
     let seq: any, delays: any, durations: any;
@@ -100,14 +115,19 @@ export class Dashboard2Component implements OnInit {
     seq2 = 0;
   }
   initDailySalesChart() {
-    // let day = new Date().getDate();
-    // let datadailyordered: DailyChartModel[] = [];
-    // this.dailyData
-    //   .filter((d) => d.index >= day)
-    //   .forEach((d) => datadailyordered.push(d));
-    // this.dailyData
-    //   .filter((d) => d.index < day)
-    //   .forEach((d) => datadailyordered.push(d));
+    let day = new Date().getDay();
+    let datadailyordered: DailyChartModel[] = [];
+    this.dailyData
+      .filter((d) => d.index > day)
+      .forEach((d) => datadailyordered.push(d));
+    this.dailyData
+      .filter((d) => d.index <= day)
+      .forEach((d) => datadailyordered.push(d));
+
+    this.DiffPercSales =
+      ((datadailyordered[6].values - datadailyordered[5].values) /
+        datadailyordered[5].values) *
+      100;
 
     // console.log("Daily Data:", this.dailyData);
     // console.log("Daily Data Ordered:", datadailyordered);
@@ -116,10 +136,10 @@ export class Dashboard2Component implements OnInit {
     let dataDailySalesChart: any = {
       // labels: ["M", "T", "W", "T", "F", "S", "S"],
       // series: [[12, 17, 7, 17, 23, 18, 38]],
-      labels: this.dailyData.map((item) => item.codes),
-      series: [this.dailyData.map((item) => item.values)],
-      // labels: datadailyordered.map((item) => item.codes),
-      // series: [datadailyordered.map((item) => item.values)],
+      // labels: this.dailyData.map((item) => item.codes),
+      // series: [this.dailyData.map((item) => item.values)],
+      labels: datadailyordered.map((item) => item.codes),
+      series: [datadailyordered.map((item) => item.values)],
     };
 
     const optionsDailySalesChart: any = {
@@ -140,106 +160,191 @@ export class Dashboard2Component implements OnInit {
 
     this.startAnimationForLineChart(dailySalesChart);
   }
-  initEmailsSubscriptionChart() {
-    /* ----------==========     Emails Subscription Chart initialization    ==========---------- */
-    var datawebsiteViewsChart = {
-      labels: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
-      series: [
+  initCategoryPerformanceChart(carts: CartModel[] = null) {
+    // var datawebsiteViewsChart: { labels: string[]; series: number[][] } = null;
+    // 1. Ambil data kategori dan produk secara bersamaan
+    forkJoin({
+      r_categories: this.productsservice.getCategories(),
+      r_products: this.productsservice.get(),
+    }).subscribe(({ r_categories, r_products }) => {
+      // Ambil semua produk dari cart
+      const products_cart = carts.flatMap((map) => map.products);
+
+      // 2. Buat Map untuk mempercepat pencarian Kategori berdasarkan Slug
+      const categoryMap = new Map(r_categories.map((c) => [c.slug, c.name]));
+
+      // 3. Gabungkan data: Cari nama kategori untuk setiap produk di keranjang
+      const productsWithCat = products_cart.map((cartItem) => {
+        // Cari detail produk asli untuk mendapatkan slug kategorinya
+        const originalProduct = r_products.products.find(
+          (p) => p.id === cartItem.id
+        );
+        const categorySlug = originalProduct
+          ? originalProduct.category
+          : "unknown";
+
+        return {
+          categoryName: categoryMap.get(categorySlug) || "Unknown",
+          quantity: cartItem.quantity,
+        };
+      });
+
+      // 4. Grouping & Summing: Hitung total Qty per Kategori
+      const categoryTotals = productsWithCat.reduce((acc, curr) => {
+        acc[curr.categoryName] = (acc[curr.categoryName] || 0) + curr.quantity;
+        return acc;
+      }, {} as { [key: string]: number });
+
+      // 5. Sorting & Limit: Ambil Top 5
+      const topCategories = Object.entries(categoryTotals)
+        .map(([name, totalQty]) => ({ name, totalQty }))
+        .sort((a, b) => b.totalQty - a.totalQty) // Urutkan dari yang terbesar
+        .slice(0, 15); // Ambil 5 teratas
+
+      // console.log("Top 5 Categories:", top5Categories);
+      // this.top5Data = top5Categories; // Simpan ke variabel untuk ditampilkan di UI
+      var datacategoryPerformanceChart = {
+        labels: topCategories.map((map) => map.name.substring(0, 3)),
+        series: [topCategories.map((map) => map.totalQty)],
+      };
+      var optionscategoryPerformanceChart = {
+        axisX: {
+          showGrid: false,
+        },
+        low: 0,
+        // high: 1000,
+        chartPadding: { top: 0, right: 5, bottom: 0, left: 0 },
+      };
+      var responsiveOptions: any[] = [
         [
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-        ],
-      ],
-    };
-    var optionswebsiteViewsChart = {
-      axisX: {
-        showGrid: false,
-      },
-      low: 0,
-      high: 1000,
-      chartPadding: { top: 0, right: 5, bottom: 0, left: 0 },
-    };
-    var responsiveOptions: any[] = [
-      [
-        "screen and (max-width: 640px)",
-        {
-          seriesBarDistance: 5,
-          axisX: {
-            labelInterpolationFnc: function (value) {
-              return value[0];
+          "screen and (max-width: 640px)",
+          {
+            seriesBarDistance: 5,
+            axisX: {
+              labelInterpolationFnc: function (value) {
+                // return value[0];
+                return value.length > 7 ? value.substring(0, 7) + ".." : value;
+              },
             },
           },
-        },
-      ],
-    ];
-    var websiteViewsChart = new Chartist.Bar(
-      "#websiteViewsChart",
-      datawebsiteViewsChart,
-      optionswebsiteViewsChart,
-      responsiveOptions
-    );
-
-    //start animation for the Emails Subscription Chart
-    this.startAnimationForBarChart(websiteViewsChart);
-  }
-  initCompletedTasksChart() {
-    /* ----------==========     Completed Tasks Chart initialization    ==========---------- */
-    const dataCompletedTasksChart: any = {
-      labels: [
-        "00:00",
-        "03:00",
-        "06:00",
-        "09:00",
-        "12:00",
-        "15:00",
-        "18:00",
-        "21:00",
-      ],
-      series: [
-        [
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
-          this.getRandomNumber(100, 1000),
         ],
-      ],
+      ];
+      var categoryPerformanceChart = new Chartist.Bar(
+        "#categoryPerformanceChart",
+        datacategoryPerformanceChart,
+        optionscategoryPerformanceChart,
+        responsiveOptions
+      );
+
+      //start animation for the Emails Subscription Chart
+      this.startAnimationForBarChart(categoryPerformanceChart);
+    });
+
+    /* ----------==========     Emails Subscription Chart initialization    ==========---------- */
+    // var datawebsiteViewsChart = {
+    //   labels: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
+    //   series: [
+    //     [
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //       this.getRandomNumber(100, 1000),
+    //     ],
+    //   ],
+    // };
+    // var optionswebsiteViewsChart = {
+    //   axisX: {
+    //     showGrid: false,
+    //   },
+    //   low: 0,
+    //   // high: 1000,
+    //   chartPadding: { top: 0, right: 5, bottom: 0, left: 0 },
+    // };
+    // var responsiveOptions: any[] = [
+    //   [
+    //     "screen and (max-width: 640px)",
+    //     {
+    //       seriesBarDistance: 5,
+    //       axisX: {
+    //         labelInterpolationFnc: function (value) {
+    //           return value[0];
+    //         },
+    //       },
+    //     },
+    //   ],
+    // ];
+    // var websiteViewsChart = new Chartist.Bar(
+    //   "#websiteViewsChart",
+    //   datawebsiteViewsChart,
+    //   optionswebsiteViewsChart,
+    //   responsiveOptions
+    // );
+
+    // //start animation for the Emails Subscription Chart
+    // this.startAnimationForBarChart(websiteViewsChart);
+  }
+  initHourlyTransactionsChart(carts: CartModel[] = null) {
+    var source = [
+      { key: "00:00", s: "00:00:00", e: "02:59:59" },
+      { key: "03:00", s: "03:00:00", e: "05:59:59" },
+      { key: "06:00", s: "06:00:00", e: "08:59:59" },
+      { key: "09:00", s: "09:00:00", e: "11:59:59" },
+      { key: "12:00", s: "12:00:00", e: "14:59:59" },
+      { key: "15:00", s: "15:00:00", e: "17:59:59" },
+      { key: "18:00", s: "18:00:00", e: "20:59:59" },
+      { key: "21:00", s: "21:00:00", e: "23:59:59" },
+    ];
+    const hourlyData = source.map((interval) => {
+      // Hitung berapa banyak cart yang masuk dalam rentang waktu ini
+      const count = carts.filter((cart) => {
+        // Ambil string waktu (HH:mm:ss) dari date
+        // Asumsi: cart.date adalah string ISO atau format Date yang valid
+        const cartTime = new Date(cart.date).toTimeString().split(" ")[0];
+
+        return cartTime >= interval.s && cartTime <= interval.e;
+      }).length;
+
+      return {
+        key: interval.key,
+        values: count,
+      };
+    });
+
+    /* ----------==========     Category Performance Chart initialization    ==========---------- */
+    const dataHourlyTransactionsChart: any = {
+      labels: hourlyData.map((map) => map.key),
+      series: [hourlyData.map((map) => map.values)],
     };
 
-    const optionsCompletedTasksChart: any = {
+    const optionsHourlyTransactionsChart: any = {
       lineSmooth: Chartist.Interpolation.cardinal({
         tension: 0,
       }),
       low: 0,
-      high: 1000, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
+      // high: 1000, // creative tim: we recommend you to set the high sa the biggest value + something for a better look
       chartPadding: { top: 0, right: 0, bottom: 0, left: 0 },
     };
 
-    var completedTasksChart = new Chartist.Line(
-      "#completedTasksChart",
-      dataCompletedTasksChart,
-      optionsCompletedTasksChart
+    var hourlyTransactionsChart = new Chartist.Line(
+      "#hourlyTransactionsChart",
+      dataHourlyTransactionsChart,
+      optionsHourlyTransactionsChart
     );
 
     // start animation for the Completed Tasks Chart - Line Chart
-    this.startAnimationForLineChart(completedTasksChart);
+    this.startAnimationForLineChart(hourlyTransactionsChart);
   }
   ngOnInit() {
     var data = this.cartsservice.getAllBy(25).subscribe((result) => {
-      console.log("Carts total items:", result.total);
+      // console.log("Carts total items:", result.total);
       this.TotalRevenue = result.carts.reduce(
         (accumulator, current) => accumulator + current.total,
         0
@@ -259,18 +364,28 @@ export class Dashboard2Component implements OnInit {
         // let yesterday = new Date();
         // yesterday.setDate(today.getDate() - (cart.id - 1));
         // // let day = yesterday.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-        let day = this.getRandomNumber(0, 6);
-        let daily = this.dailyData.find((d) => d.index === day);
+        // let day = this.getRandomNumber(0, 6);
+        // let daily = this.dailyData.find((d) => d.index === day);
+        // if (daily) {
+        //   // daily.values += cart.totalProducts;
+        //   daily.values += cart.total;
+        //   // daily.values += 1;
+        // }
+
+        const now = new Date();
+        const last30Days = new Date();
+        last30Days.setDate(now.getDate() - 30);
+        cart.date = this.getRandomDate(last30Days, now);
+        // console.log(`Cart ID: ${cart.id}, Date: ${cart.date}`);
+        let daily = this.dailyData.find((d) => d.index === cart.date.getDay());
         if (daily) {
-          // daily.values += cart.totalProducts;
           daily.values += cart.total;
-          // daily.values += 1;
         }
       });
 
       this.initDailySalesChart();
-      this.initEmailsSubscriptionChart();
-      this.initCompletedTasksChart();
+      this.initCategoryPerformanceChart(result.carts);
+      this.initHourlyTransactionsChart(result.carts);
     });
   }
 }
