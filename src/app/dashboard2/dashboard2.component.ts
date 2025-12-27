@@ -1,12 +1,9 @@
 import { Component, OnInit } from "@angular/core";
 import * as Chartist from "chartist";
-import { data, get, map } from "jquery";
-import { dirname } from "path";
 import { CartModel, CartsService } from "services/carts.service";
 import { ProductsService } from "services/products.service";
 import { UserModel, UsersService } from "services/users.service";
 import { forkJoin, of } from "rxjs";
-import { time } from "console";
 
 interface DailyChartModel {
   index: number;
@@ -29,6 +26,7 @@ export class Dashboard2Component implements OnInit {
   DiffPercSales: number = 0;
 
   UserShoppingSource: any = [];
+  WarehouseTrafficAnalytics: any = [];
 
   dailyData: DailyChartModel[] = [
     { index: 0, codes: "Su", values: 0 },
@@ -347,6 +345,126 @@ export class Dashboard2Component implements OnInit {
     // start animation for the Completed Tasks Chart - Line Chart
     this.startAnimationForLineChart(hourlyTransactionsChart);
   }
+  initWarehouseTrafficAnalytics(carts: CartModel[] = null) {
+    forkJoin({
+      x_carts: of(carts),
+      x_products: this.productsservice.get(),
+      x_categories: this.productsservice.getCategories(),
+      x_users: this.usersservice.get(),
+    }).subscribe(({ x_carts, x_products, x_categories, x_users }) => {
+      const sim_products = x_products.products.map((map) => ({
+        id: map.id,
+        tit: map.title,
+        cat: map.category,
+        bra: map.brand,
+        sto: map.stock,
+      }));
+      const sim_categories = x_categories.map((map) => ({
+        slu: map.slug,
+        nam: map.name,
+      }));
+      const sim_carts = x_carts.flatMap((fmap) =>
+        fmap.products.map((map) => ({
+          sku: map.id,
+          qty: map.quantity,
+          usr: fmap.userId,
+        }))
+      );
+      const sim_users = x_users.users.map((map) => ({
+        id: map.id,
+        cit: map.address.city,
+        cou: map.address.country,
+      }));
+
+      const join_pro_cat = sim_products.map((pro) => {
+        const cat = sim_categories.find((find) => find.slu === pro.cat);
+        return {
+          sku: pro.id,
+          tit: pro.tit,
+          cat: cat ? cat.nam : pro.cat,
+          bra: pro.bra ?? "no brands",
+          sto: pro.sto,
+        };
+      });
+      const join_car_usr = sim_carts.map((car) => {
+        const usr = sim_users.find((find) => (find.id = car.usr));
+        return {
+          sku: car.sku,
+          qty: car.qty,
+          usr: car.usr,
+          cit: usr ? usr.cit : "no city",
+          cou: usr ? usr.cou : "no country",
+        };
+      });
+      const join_pro_cat_car_usr = join_pro_cat.map((map) => {
+        const car_usr = join_car_usr.find((find) => find.sku === map.sku);
+        return {
+          sku: map.tit,
+          cat: map.cat,
+          bra: map.bra,
+          sto: map.sto,
+          qty: car_usr ? car_usr.qty : 0,
+          cit: car_usr ? car_usr.cit : "warehouse",
+          cou: car_usr ? car_usr.cou : "warehouse",
+        };
+      });
+      const zone_1 = Object.values(
+        join_pro_cat_car_usr.reduce((acc: any, curr) => {
+          const key = `${curr.sku}|${curr.cat}`;
+          if (!acc[key]) {
+            acc[key] = {
+              sou: curr.sku,
+              tar: curr.cat,
+              val: 0,
+            };
+          }
+          acc[key].val += curr.sto + curr.qty;
+          return acc;
+        }, {})
+      );
+      const zone_2 = Object.values(
+        join_pro_cat_car_usr.reduce((acc: any, curr) => {
+          const key = `${curr.cat}|${curr.cou}`;
+          if (!acc[key]) {
+            acc[key] = {
+              sou: curr.cat,
+              tar: curr.cou,
+              val: 0,
+            };
+          }
+          acc[key].val += curr.cou == "warehouse" ? curr.qty : curr.sto;
+          return acc;
+        }, {})
+      );
+      const zone_3 = Object.values(
+        join_pro_cat_car_usr.reduce((acc: any, curr) => {
+          const key = `${curr.cou}|${curr.cit}`;
+          if (!acc[key]) {
+            acc[key] = {
+              sou: curr.cou,
+              tar: curr.cit,
+              val: 0,
+            };
+          }
+          acc[key].val += curr.qty;
+          return acc;
+        }, {})
+      );
+      // sim_carts.forEach((e) => console.log(e.usr));
+      // join_car_usr.forEach((e) => console.log(e.cit));
+
+      // var zone: any = [...zone_1, ...zone_2, ...zone_3]
+      var zone: any = [
+        ...zone_1.slice(0, 5),
+        ...zone_2.slice(0, 5),
+        ...zone_3.slice(0, 5),
+      ]
+        .filter((filter: any) => filter.sou != filter.tar)
+        .filter((filter: any) => filter.val > 0)
+        .sort((x: any, y: any) => y.val - x.val);
+      this.WarehouseTrafficAnalytics = zone;
+    });
+  }
   initTopCustomer(carts: CartModel[] = null) {
     forkJoin({
       j_users: this.usersservice.get(),
@@ -390,7 +508,7 @@ export class Dashboard2Component implements OnInit {
       // console.log(userShoppingReport);
       const user_final = Object.values(user_grouped)
         .sort((x, z) => z.total - x.total)
-        .slice(0, 5)
+        .slice(0, 6)
         .map((elmnt, index) => {
           elmnt.no = index + 1;
           return elmnt;
@@ -443,6 +561,7 @@ export class Dashboard2Component implements OnInit {
       this.initCategoryPerformanceChart(result.carts);
       this.initHourlyTransactionsChart(result.carts);
       this.initTopCustomer(result.carts);
+      this.initWarehouseTrafficAnalytics(result.carts);
     });
   }
 }

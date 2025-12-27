@@ -4,6 +4,8 @@ import { Dashboard2Component } from "./dashboard2.component";
 import { FormatCompactPipe } from "../pipes/format-compact.pipe";
 
 import { DxDataGridModule } from "devextreme-angular/ui/data-grid";
+import { DxSankeyModule } from "devextreme-angular/ui/sankey";
+// import { DxSankeyModule } from "devextreme-angular";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatInputModule } from "@angular/material/input";
@@ -11,14 +13,20 @@ import { MatRippleModule } from "@angular/material/core";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSelectModule } from "@angular/material/select";
-import { GridTopconsumersComponent } from './components/grid-topconsumers/grid-topconsumers.component';
-import { SymbolComponent } from './components/symbol/symbol.component';
+import { GridTopconsumersComponent } from "./components/grid-topconsumers/grid-topconsumers.component";
+import { SymbolComponent } from "./components/symbol/symbol.component";
 
 @NgModule({
-  declarations: [Dashboard2Component, FormatCompactPipe, GridTopconsumersComponent, SymbolComponent],
+  declarations: [
+    Dashboard2Component,
+    FormatCompactPipe,
+    GridTopconsumersComponent,
+    SymbolComponent,
+  ],
   imports: [
     CommonModule,
     DxDataGridModule,
+    DxSankeyModule,
     MatButtonModule,
     MatRippleModule,
     MatFormFieldModule,
